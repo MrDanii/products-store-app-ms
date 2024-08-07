@@ -1,0 +1,94 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  idUser String @id @default(uuid())
+
+  email        String    @unique
+  isGoogleUser Boolean   @default(false)
+  userNickName String    @unique
+  password     String
+  fullName     String
+  isActive     Boolean   @default(true)
+  roles        String[]  @default(["user"])
+  lastLogin    DateTime?
+  createdBy    String    @default("SYSTEM")
+  updatedBy    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  userAdrress      UserAddress[]
+  favoriteProducts FavoriteProducts?
+  shoppinCart      ShoppingCart?
+  // order            Order[]
+}
+
+model UserAddress {
+  idUserAddress String @id @default(uuid())
+
+  streetName     String
+  exteriorNumber Int
+  interiorNumber Int?
+  neighborhood   String
+  city           String
+  state          String
+  zipCode        String
+
+  User       User?   @relation(fields: [userIdUser], references: [idUser])
+  userIdUser String?
+}
+
+model FavoriteProducts {
+  idFavorites Int @id @default(autoincrement())
+
+  listName     String   @default("Favorites")
+  productsList String[] @default([])
+
+  user       User   @relation(fields: [userIdUser], references: [idUser])
+  userIdUser String @unique
+}
+
+model ShoppingCart {
+  idCart Int @id @default(autoincrement())
+
+  updateAt DateTime @updatedAt
+
+  User       User   @relation(fields: [userIdUser], references: [idUser])
+  userIdUser String @unique
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  DELIVERED
+  CANCELLED
+}
+
+// model Order {
+//   idOrder String @id @default(uuid())
+
+//   orderStatus     OrderStatus @default(PENDING)
+//   totalAmount     Float
+//   totalItems      Int
+//   discountApplied Float       @default(0)
+//   cuponUsed       Boolean     @default(false)
+//   createdBy       String
+//   updatedBy       String?
+//   createdAt       DateTime    @default(now())
+//   updatedAt       DateTime    @updatedAt
+
+//   User            User?       @relation(fields: [userIdUser], references: [idUser])
+//   userIdUser      String?
+// }
