@@ -19,7 +19,7 @@ model User {
   email        String    @unique
   isGoogleUser Boolean   @default(false)
   userNickName String    @unique
-  password     String
+  password     String?
   fullName     String
   isActive     Boolean   @default(true)
   roles        String[]  @default(["user"])

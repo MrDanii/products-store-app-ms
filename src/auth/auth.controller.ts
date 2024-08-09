@@ -1,7 +1,8 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Req, UseGuards } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { AuthService } from './auth.service';
-import { CreateUserDto, LoginUserDto } from './dto';
+import { CreateUserDto, GoogleAuthDto, LoginUserDto } from './dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller()
 export class AuthController {
@@ -29,6 +30,12 @@ export class AuthController {
   @MessagePattern('auth.verify.token')
   verifyToken(@Payload() token: string) {
     return this.authService.verifyToken(token)
+  }
+
+  @MessagePattern('auth.google.redirect')
+  googleAuthRedirect(@Payload() googleAuthDto: GoogleAuthDto) {
+    // console.log(googleAuthDto);
+    return this.authService.googleLoginUser(googleAuthDto)
   }
 
 }
