@@ -32,7 +32,7 @@ model User {
   userAdrress      UserAddress[]
   favoriteProducts FavoriteProducts?
   shoppinCart      ShoppingCart?
-  // order            Order[]
+  order            Order[]
 }
 
 model UserAddress {
@@ -65,8 +65,9 @@ model ShoppingCart {
 
   updateAt DateTime @updatedAt
 
-  User       User   @relation(fields: [userIdUser], references: [idUser])
-  userIdUser String @unique
+  User                User                  @relation(fields: [userIdUser], references: [idUser])
+  userIdUser          String                @unique
+  shoppingCartDetails ShoppingCartDetails[]
 }
 
 enum OrderStatus {
@@ -76,19 +77,130 @@ enum OrderStatus {
   CANCELLED
 }
 
-// model Order {
-//   idOrder String @id @default(uuid())
+model Order {
+  idOrder String @id @default(uuid())
 
-//   orderStatus     OrderStatus @default(PENDING)
-//   totalAmount     Float
-//   totalItems      Int
-//   discountApplied Float       @default(0)
-//   cuponUsed       Boolean     @default(false)
-//   createdBy       String
-//   updatedBy       String?
-//   createdAt       DateTime    @default(now())
-//   updatedAt       DateTime    @updatedAt
+  orderStatus     OrderStatus @default(PENDING)
+  totalAmount     Float
+  totalItems      Int
+  discountApplied Float       @default(0)
+  cuponUsed       Boolean     @default(false)
+  createdBy       String
+  updatedBy       String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
-//   User            User?       @relation(fields: [userIdUser], references: [idUser])
-//   userIdUser      String?
-// }
+  User         User?          @relation(fields: [userIdUser], references: [idUser])
+  userIdUser   String?
+  orderReceipt OrderReceipt?
+  orderAddress OrderAddress?
+  orderDetails OrderDetails[]
+}
+
+model OrderReceipt {
+  idOrderReceipt String @id @default(uuid())
+
+  receiptUrl String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  Order        Order? @relation(fields: [orderIdOrder], references: [idOrder])
+  orderIdOrder String @unique
+}
+
+model OrderAddress {
+  idOrderAddress String @id @default(uuid())
+
+  streetName     String
+  exteriorNumber Int
+  interiorNumber Int?
+  neighborhood   String
+  city           String
+  state          String
+  zipCode        String
+
+  Order        Order? @relation(fields: [orderIdOrder], references: [idOrder])
+  orderIdOrder String @unique
+}
+
+model ShoppingCartDetails {
+  idShoppingCartDetails Int @id @default(autoincrement())
+
+  quantity Int
+  price    Float
+
+  ShoppingCart            ShoppingCart?   @relation(fields: [shoppingCartIdCart], references: [idCart])
+  shoppingCartIdCart      Int?
+  ProductCatalog          ProductCatalog? @relation(fields: [productCatalogIdProduct], references: [idProduct])
+  productCatalogIdProduct String?
+}
+
+model OrderDetails {
+  idOrderDetail Int @id @default(autoincrement())
+
+  quantity Int
+  price    Float
+
+  Order                   Order?          @relation(fields: [orderIdOrder], references: [idOrder])
+  orderIdOrder            String?
+  ProductCatalog          ProductCatalog? @relation(fields: [productCatalogIdProduct], references: [idProduct])
+  productCatalogIdProduct String?
+}
+
+model ProductCatalog {
+  idProduct String @id @default(uuid())
+
+  productName   String
+  description   String?
+  available     Boolean  @default(true)
+  stockQuantity Int      @default(1)
+  price         Float
+  tags          String[]
+  slug          String
+  createdBy     String
+  updatedBy     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  ProductCategory           ProductCategory?      @relation(fields: [productCategoryIdCategory], references: [idCategory])
+  productCategoryIdCategory Int?
+  productImage              ProductImage[]
+  productRating             ProductRating[]
+  shoppingCartDetails       ShoppingCartDetails[]
+  orderDetails              OrderDetails[]
+}
+
+model ProductCategory {
+  idCategory Int @id @default(autoincrement())
+
+  categoryName String
+  isActive     Boolean  @default(true)
+  createdBy    String
+  updatedBy    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  productCatalog ProductCatalog[]
+}
+
+model ProductImage {
+  idProductImage Int @id @default(autoincrement())
+
+  url String
+
+  ProductCatalog          ProductCatalog? @relation(fields: [productCatalogIdProduct], references: [idProduct])
+  productCatalogIdProduct String?
+}
+
+model ProductRating {
+  idProductRating Int @id @default(autoincrement())
+
+  rating    Int
+  createdBy String
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ProductCatalog          ProductCatalog? @relation(fields: [productCatalogIdProduct], references: [idProduct])
+  productCatalogIdProduct String?
+}
