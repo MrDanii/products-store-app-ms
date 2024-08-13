@@ -155,8 +155,8 @@ model ProductCatalog {
   available     Boolean  @default(true)
   stockQuantity Int      @default(1)
   price         Float
-  tags          String[]
-  slug          String
+  tags          String[] @default([])
+  slug          String   @unique
   createdBy     String
   updatedBy     String?
   createdAt     DateTime @default(now())
@@ -173,9 +173,9 @@ model ProductCatalog {
 model ProductCategory {
   idCategory Int @id @default(autoincrement())
 
-  categoryName String
+  categoryName String   @unique
   isActive     Boolean  @default(true)
-  createdBy    String
+  createdBy    String?
   updatedBy    String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
@@ -196,7 +196,7 @@ model ProductRating {
   idProductRating Int @id @default(autoincrement())
 
   rating    Int
-  createdBy String
+  createdBy String   @unique
   updatedBy String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
