@@ -70,4 +70,9 @@ export class ProductController {
     return this.productService.rateProduct(productRatingDto)
   }
 
+  @MessagePattern('products.validate')
+  validateProducts(@Payload() productIds: string[]) {
+    return this.productService.validateProducts(productIds)
+  }
+
 }
