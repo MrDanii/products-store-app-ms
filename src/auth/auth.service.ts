@@ -22,7 +22,7 @@ export class AuthService extends PrismaClient implements OnModuleInit {
     this.logger.log('Auth Service and Database connected')
   }
 
-  async signJWT(payload: JwtPayload, jwtExpireTime = '2h') {
+  async signJWT(payload: JwtPayload, jwtExpireTime = envs.jwtExpireTime) {
     return this.jwtService.sign(payload, { expiresIn: jwtExpireTime })
   }
 
