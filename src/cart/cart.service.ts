@@ -71,8 +71,6 @@ export class CartService extends PrismaClient implements OnModuleInit {
       })
       // if exists we add requested quantity to the current quantity in database
       let newQuantity: number = (cartDetailsDb) ? (cartDetailsDb.quantity + quantity) : quantity
-      console.log(`request quantity: ${quantity}`);
-      console.log(`new Quantity: ${newQuantity}`);
       
       if (cartDetailsDb) {
         return await this.updateCartItem({idProduct, idUser, quantity: newQuantity})

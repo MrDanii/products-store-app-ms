@@ -39,11 +39,12 @@ model UserAddress {
   idUserAddress String @id @default(uuid())
 
   streetName     String
-  exteriorNumber Int
-  interiorNumber Int?
-  neighborhood   String
+  exteriorNumber String
+  interiorNumber String?
+  neighborhood   String?
   city           String
   state          String
+  country        String
   zipCode        String
 
   User       User?   @relation(fields: [userIdUser], references: [idUser])
