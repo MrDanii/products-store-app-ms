@@ -1,12 +1,13 @@
 import { HttpStatus, Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
-import { PrismaClient, ProductCatalog } from '@prisma/client';
+import { Order, OrderStatus, PrismaClient, ProductCatalog } from '@prisma/client';
 import { ClientProxy, RpcException } from '@nestjs/microservices';
 import { NATS_SERVICE } from 'src/config';
 import { firstValueFrom } from 'rxjs';
-import { ChangeStatusDto, OrderPaginationDto } from './dto';
+import { ChangeStatusDto, OrderPaginationDto, PaidOrderDto, PaymentSessionDto } from './dto';
 import { arrayNotEmpty } from 'class-validator';
+import { OrderWithItems } from './interfaces/order-with-items.interface';
 
 @Injectable()
 export class OrdersService extends PrismaClient implements OnModuleInit {
@@ -185,7 +186,51 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
     })
   }
 
-  paidOrder() {
-    
+  async createPaymentSession(order: OrderWithItems) {
+    const paymentSessionDto: PaymentSessionDto = {
+      orderId: order.idOrder,
+      currency: 'mxn',
+      items: order.orderDetails.map((currentItem) => {
+        return {
+          name: currentItem.name,
+          price: currentItem.price,
+          quantity: currentItem.quantity
+        }
+      })
+    }
+
+    const paymentSession = await firstValueFrom(this.natsClient.send('create.payment.session', paymentSessionDto))
+    return paymentSession
+  }
+
+  async paidOrder(paidOrderDto: PaidOrderDto) {
+    this.logger.log('Order Paid')
+    this.logger.log(paidOrderDto)
+
+    const { orderId, stripePaymentId, receiptUrl } = paidOrderDto
+    try {
+      const orderUpdated = await this.order.update({
+        where: { idOrder: orderId },
+        data: {
+          orderStatus: OrderStatus.PAID,
+          isPaid: true,
+          paidAt: new Date(),
+          stripeChargeId: stripePaymentId,
+
+          orderReceipt: {
+            create: {
+              receiptUrl: receiptUrl
+            }
+          }
+        }
+      })
+
+      return orderUpdated
+    } catch (error) {
+      throw new RpcException({
+        status: HttpStatus.BAD_REQUEST,
+        message: error.message
+      })
+    }
   }
 }

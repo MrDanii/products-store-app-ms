@@ -4,6 +4,7 @@ import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { ChangeStatusDto, OrderPaginationDto, PaidOrderDto } from './dto';
+import { Order } from '@prisma/client';
 
 @Controller()
 export class OrdersController {
@@ -12,9 +13,7 @@ export class OrdersController {
   @MessagePattern('order.create')
   async create(@Payload() createOrderDto: CreateOrderDto) {
     const order = await this.ordersService.create(createOrderDto)
-    const paymentSession = {some: "123"}
-    // TODO: implement payment from microservice
-    // const paymentSession = this.ordersService.createPaymentSession(order)
+    const paymentSession = await this.ordersService.createPaymentSession(order)
 
     return {
       order,
@@ -38,9 +37,8 @@ export class OrdersController {
     return this.ordersService.changeStatus(changeStatusDto);
   }
 
-  // TODO: create a service to mark order as 'PAID'
-  @MessagePattern('order.paid')
+  @MessagePattern('order.paid.succeded')
   paidOrder(@Payload() paidOrderDto: PaidOrderDto) {
-    return {paidOrderDto}
+    return this.ordersService.paidOrder(paidOrderDto)
   }
 }
