@@ -200,7 +200,7 @@ model ProductRating {
   idProductRating Int @id @default(autoincrement())
 
   rating    Int
-  createdBy String   @unique
+  createdBy String   
   updatedBy String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,8 +1,8 @@
 version: '3'
 
 services:
-  products-store-db:
-    container_name: products-store-db
+  products-store-db2:
+    container_name: products-store-db2
     image: postgres:16.2
     restart: always
     # this local path is the local volume from the container, for persistent data

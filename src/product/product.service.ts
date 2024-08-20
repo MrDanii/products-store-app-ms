@@ -4,6 +4,7 @@ import { PrismaClient, ProductCategory, ProductRating } from '@prisma/client';
 import { RpcException } from '@nestjs/microservices';
 import { UserJwtDto } from 'src/common/dto/user-jwt.dto';
 import { PaginationDto, TermDto } from 'src/common';
+import { sourceMapsEnabled } from 'process';
 
 @Injectable()
 export class ProductService extends PrismaClient implements OnModuleInit {
@@ -207,7 +208,7 @@ export class ProductService extends PrismaClient implements OnModuleInit {
     const {
       idCategory, productName, description,
       available, stockQuantity, price,
-      tags, slug, createdBy
+      tags, slug, createdBy, productImage
     } = createProductDto
     try {
       const product = await this.productCatalog.findUnique({
@@ -223,23 +224,71 @@ export class ProductService extends PrismaClient implements OnModuleInit {
         })
       }
 
-      const newProduct = await this.productCatalog.create({
-        data: {
-          productCategoryIdCategory: idCategory,
-          productName,
-          description,
-          available,
-          stockQuantity,
-          price,
-          tags,
-          slug,
-          createdBy
-        }
-      })
 
-      return {
-        productCatalog: newProduct
+      if (productImage) {
+        const newProduct = await this.productCatalog.create({
+          data: {
+            productCategoryIdCategory: idCategory,
+            productName,
+            description,
+            available,
+            stockQuantity,
+            price,
+            tags,
+            slug,
+            createdBy,
+            productImage: {
+              createMany: {
+                data: productImage?.map((prodImage) => {
+                  return {
+                    url: prodImage
+                  }
+                })
+              }
+            }
+          },
+          include: {
+            productImage: {
+              select: {
+                idProductImage: true,
+                url: true
+              }
+            }
+          }
+        })
+
+        return {
+          productCatalog: newProduct
+        }
+      } else {
+        const newProduct = await this.productCatalog.create({
+          data: {
+            productCategoryIdCategory: idCategory,
+            productName,
+            description,
+            available,
+            stockQuantity,
+            price,
+            tags,
+            slug,
+            createdBy
+          },
+          include: {
+            productImage: {
+              select: {
+                idProductImage: true,
+                url: true
+              }
+            }
+          }
+        })
+
+        return {
+          productCatalog: newProduct
+        }
       }
+
+
     } catch (error) {
       throw new RpcException({
         status: HttpStatus.BAD_REQUEST,
@@ -308,7 +357,7 @@ export class ProductService extends PrismaClient implements OnModuleInit {
   async update(idProduct: string, updateProductDto: UpdateProductDto) {
     const {
       productName, description, available, stockQuantity,
-      price, tags, slug, createdBy
+      price, tags, slug, createdBy, updatedBy
     } = updateProductDto
 
     try {
@@ -347,7 +396,7 @@ export class ProductService extends PrismaClient implements OnModuleInit {
       const productUpdated = await this.productCatalog.update({
         data: {
           productName, description, available, stockQuantity,
-          price, tags, slug, createdBy,
+          price, tags, slug, createdBy, updatedBy,
           productImage: {
             createMany: {
               data: productImage.map((currentImage) => {
@@ -386,7 +435,7 @@ export class ProductService extends PrismaClient implements OnModuleInit {
 
   async rateProduct(productRatingDto: ProductRatingDto) {
     // return {productRatingDto}
-    const { idProduct, rating, createdBy } = productRatingDto
+    const { idProduct, rating, createdBy, updatedBy } = productRatingDto
 
     try {
       const product = await this.productCatalog.findFirst({ where: { idProduct } })
@@ -418,7 +467,7 @@ export class ProductService extends PrismaClient implements OnModuleInit {
         })
       } else {
         // Product Rating already exists, update rating
-        return this.updateRatedProduct(rating, ratingExists.idProductRating, createdBy)
+        return this.updateRatedProduct(rating, ratingExists.idProductRating, updatedBy)
       }
 
     } catch (error) {
@@ -450,7 +499,7 @@ export class ProductService extends PrismaClient implements OnModuleInit {
   }
 
   // Method that validates if all products exists
-  async validateProducts (productsIds: string[]) {
+  async validateProducts(productsIds: string[]) {
     productsIds = [...new Set(productsIds)]
 
     const products = await this.productCatalog.findMany({
