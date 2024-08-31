@@ -26,6 +26,19 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
 
   async create(createOrderDto: CreateOrderDto) {
     try {
+      // 0.- Extra Step in case we need Address on Orders
+      const userAddress = await this.userAddress.findUnique({
+        where: { idUserAddress: createOrderDto.idUserAddress }
+      })
+
+      if (!userAddress) {
+        throw new RpcException({
+          status: HttpStatus.BAD_REQUEST,
+          message: `address with ID: [${createOrderDto.idUserAddress}] was not found`
+        })
+      }
+      const { idUserAddress, userIdUser, ...restUserAddress } = userAddress // dropping things that we dont need for 'OrderAddress' Table
+
       // 1.- verify that all products exists
       const productIds = createOrderDto.items.map((item) => (item.idProduct))
       const verifiedProducts: ProductCatalog[] = await firstValueFrom(
@@ -63,7 +76,8 @@ export class OrdersService extends PrismaClient implements OnModuleInit {
                 }
               })
             }
-          }
+          },
+          orderAddress: { create: restUserAddress }
         },
         include: {
           orderDetails: {

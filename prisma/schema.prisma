@@ -116,11 +116,12 @@ model OrderAddress {
   idOrderAddress String @id @default(uuid())
 
   streetName     String
-  exteriorNumber Int
-  interiorNumber Int?
-  neighborhood   String
+  exteriorNumber String
+  interiorNumber String?
+  neighborhood   String?
   city           String
   state          String
+  country        String
   zipCode        String
 
   Order        Order? @relation(fields: [orderIdOrder], references: [idOrder])
@@ -200,7 +201,7 @@ model ProductRating {
   idProductRating Int @id @default(autoincrement())
 
   rating    Int
-  createdBy String   
+  createdBy String
   updatedBy String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,4 +1,4 @@
-import { ArrayMinSize, IsArray, IsString, MinLength, ValidateNested } from "class-validator";
+import { ArrayMinSize, IsArray, IsString, IsUUID, MinLength, ValidateNested } from "class-validator";
 import { OrderDetailsDto } from "./order-details.dto";
 import { Type } from "class-transformer";
 
@@ -13,4 +13,7 @@ export class CreateOrderDto {
   @ArrayMinSize(1)
   @Type(() => OrderDetailsDto)
   items: OrderDetailsDto[]
+
+  @IsUUID()
+  idUserAddress: string
 }
