@@ -1,0 +1,41 @@
+ARG NODE_VERSION=22-alpine3.19
+
+#* 1. Base Image Stage
+FROM node:${NODE_VERSION} AS base
+WORKDIR /usr/src/app
+EXPOSE 3001
+
+#* 2. Installing Dependencies Stage
+FROM base AS deps
+
+COPY ./package-lock.json ./
+COPY ./package.json ./
+
+RUN npm install
+
+#* 3. Building Stage
+FROM base AS build
+
+ARG STORE_DATABASE_URL
+ENV DATABASE_URL=postgresql://postgres:YourStrongPostgresPassword@localhost:5432/products-store1-db?schema=public
+
+COPY --from=deps ./usr/src/app/node_modules ./node_modules
+COPY . .
+COPY ./prisma ./
+
+RUN npx prisma migrate deploy
+RUN npx prisma generate 
+RUN npm run build 
+RUN RUN npm ci -f --only=production && npm cache clean --force  # Deleting dev dependencies
+
+#* 4. Production Stage
+FROM base AS prod
+
+COPY --from=build ./usr/src/app/node_modules ./node_modules
+COPY --from=build ./usr/src/app/dist ./dist
+
+ENV NODE_ENV=production
+USER node
+EXPOSE 3000
+
+CMD [ "node", "dist/main.js" ]
