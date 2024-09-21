@@ -1,4 +1,4 @@
-import { IsEmail, IsString, IsUrl, MinLength } from "class-validator"
+import { IsEmail, IsOptional, IsString, IsUrl, MinLength } from "class-validator"
 
 export class GoogleAuthDto {
   @IsString()
@@ -12,10 +12,12 @@ export class GoogleAuthDto {
   @IsString()
   lastName: string
   
+  @IsOptional()
   @IsString()
   @MinLength(1)
   picture: string
   
+  @IsOptional()
   @IsString()
   @MinLength(1)
   accessToken: string
