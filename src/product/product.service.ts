@@ -1,5 +1,5 @@
 import { BadRequestException, HttpStatus, Injectable, InternalServerErrorException, Logger, OnModuleInit } from '@nestjs/common';
-import { CreateCategoryDto, CreateProductDto, FindCategoryDto, ProductRatingDto, UpdateCategoryDto, UpdateProductDto } from './dto';
+import { CreateCategoryDto, CreateProductDto, FindCategoryDto, ProductByCategoryDto, ProductRatingDto, UpdateCategoryDto, UpdateProductDto } from './dto';
 import { PrismaClient, ProductCategory, ProductRating } from '@prisma/client';
 import { RpcException } from '@nestjs/microservices';
 import { UserJwtDto } from 'src/common/dto/user-jwt.dto';
@@ -518,5 +518,94 @@ export class ProductService extends PrismaClient implements OnModuleInit {
     }
 
     return products
+  }
+
+  async findProductsByCategory(productByCategoryDto: ProductByCategoryDto) {
+    const { idCategory, limit, page } = productByCategoryDto
+
+    try {
+      const totalProducts = await this.productCatalog.count({ where: { productCategoryIdCategory: idCategory } })
+      const lastPage = Math.ceil(totalProducts / limit)
+      const products = await this.productCatalog.findMany({
+        skip: (page - 1) * limit,
+        take: limit,
+        where: {
+          productCategoryIdCategory: idCategory
+        },
+        include: {
+          productRating: {
+            select: {
+              rating: true
+            }
+          }
+        }
+      })
+
+      if (!products || products.length === 0) {
+        throw new RpcException({
+          status: 400,
+          message: `Product with category Id ${idCategory} were not found`
+        })
+      }
+
+      const newProducts = products.map((currentProduct) => {
+        return {
+          ...currentProduct,
+          productRating: (currentProduct.productRating.reduce((acc, currentRating) => {
+            return acc + (currentRating.rating)
+          }, 0)) / (currentProduct.productRating.length),
+          totalLikes: 0
+        }
+      })
+
+      // 1. Define Products
+      const productsIds = newProducts.map((currentProd) => {
+        return currentProd.idProduct
+      })
+
+      // 2. Get from favoriteProducts table related to all definedProducts
+      const favoriteProducts = await this.favoriteProducts.findMany({
+        where: {
+          productsList: {
+            hasSome: productsIds
+          }
+        },
+        select: {
+          productsList: true
+        }
+      })
+
+      // 3. create Dictionary that store amount of likes
+      let prodLikesDictionary = {}
+      for (const productId of productsIds) {
+        prodLikesDictionary[`${productId}`] = 0
+      }
+
+      // 4. iterate favoriteProductsList inside productsIds to get amount of likes per productId
+      for (const productId of productsIds) {
+        for (const favoriteProd of favoriteProducts) {
+          prodLikesDictionary[productId] += (favoriteProd.productsList.includes(productId)) ? 1 : 0
+        }
+      }
+
+      return {
+        data: newProducts.map((prod) => {
+          return {
+            ...prod,
+            totalLikes: prodLikesDictionary[prod.idProduct]
+          }
+        }),
+        meta: {
+          page: page,
+          total: totalProducts,
+          lastPage: lastPage
+        }
+      }
+    } catch (error) {
+      throw new RpcException({
+        status: HttpStatus.BAD_REQUEST,
+        message: error.message
+      })
+    }
   }
 }

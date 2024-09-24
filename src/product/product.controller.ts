@@ -2,7 +2,7 @@ import { Controller } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { ProductService } from './product.service';
 import { PaginationDto } from 'src/common/dto/pagination.dto';
-import { CreateCategoryDto, CreateProductDto, FindCategoryDto, ProductRatingDto, UpdateCategoryDto, UpdateProductDto } from './dto';
+import { CreateCategoryDto, CreateProductDto, FindCategoryDto, ProductByCategoryDto, ProductRatingDto, UpdateCategoryDto, UpdateProductDto } from './dto';
 import { TermDto } from 'src/common';
 import { ProductRating } from '@prisma/client';
 
@@ -73,6 +73,11 @@ export class ProductController {
   @MessagePattern('products.validate')
   validateProducts(@Payload() productIds: string[]) {
     return this.productService.validateProducts(productIds)
+  }
+
+  @MessagePattern('product.find.all.by.category')
+  getProductsByCategory(@Payload() productByCategoryDto: ProductByCategoryDto) {
+    return this.productService.findProductsByCategory(productByCategoryDto)
   }
 
 }

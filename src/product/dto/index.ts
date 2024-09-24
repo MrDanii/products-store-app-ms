@@ -1,3 +1,4 @@
+export { ProductByCategoryDto } from "./product-by-category.dto";
 export { CreateCategoryDto } from "./create-category.dto";
 export { CreateProductDto } from "./create-product.dto";
 export { FindCategoryDto } from "./category-pagination.dto";

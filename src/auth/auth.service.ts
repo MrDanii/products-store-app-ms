@@ -30,6 +30,19 @@ export class AuthService extends PrismaClient implements OnModuleInit {
     const { email, fullName, userNickName, password } = createUserDto
 
     try {
+      const userNickNameExists = await this.user.findUnique({
+        where: {
+          userNickName
+        }
+      })
+
+      if (userNickNameExists) {
+        throw new RpcException({
+          status: 400,
+          message: 'User already exists'
+        })
+      }
+      
       const currentUser = await this.user.findUnique({
         where: {
           email
@@ -39,7 +52,7 @@ export class AuthService extends PrismaClient implements OnModuleInit {
       if (currentUser) {
         throw new RpcException({
           status: 400,
-          message: 'User already exists'
+          message: 'Email already taken'
         })
       }
 
