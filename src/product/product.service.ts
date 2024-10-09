@@ -55,7 +55,10 @@ export class ProductService extends PrismaClient implements OnModuleInit {
 
       const categories = await this.productCategory.findMany({
         take: limit,
-        skip: ((page - 1) * limit)
+        skip: ((page - 1) * limit),
+        where: {
+          isActive: true
+        }
       })
 
       return {
@@ -306,11 +309,30 @@ export class ProductService extends PrismaClient implements OnModuleInit {
 
       const products = await this.productCatalog.findMany({
         take: limit,
-        skip: (page - 1) * limit
+        skip: (page - 1) * limit,
+        include: {
+          ProductCategory: {
+            select: {
+              idCategory: true,
+              categoryName: true
+            }
+          },
+          productImage: {
+            select: {
+              idProductImage: true,
+              url: true
+            }
+          }
+        }
+      })
+
+      const newProducts = products.map((prod) => {
+        const {productCategoryIdCategory, ...rest} = prod
+        return rest
       })
 
       return {
-        data: products,
+        data: newProducts,
         meta: {
           page,
           total: totalProducts,
@@ -535,7 +557,13 @@ export class ProductService extends PrismaClient implements OnModuleInit {
         include: {
           productRating: {
             select: {
-              rating: true
+              rating: true,
+              createdBy: true
+            }
+          },
+          productImage: {
+            select: {
+              url: true
             }
           }
         }
@@ -551,7 +579,7 @@ export class ProductService extends PrismaClient implements OnModuleInit {
       const newProducts = products.map((currentProduct) => {
         return {
           ...currentProduct,
-          productRating: (currentProduct.productRating.reduce((acc, currentRating) => {
+          ratingAvg: (currentProduct.productRating.reduce((acc, currentRating) => {
             return acc + (currentRating.rating)
           }, 0)) / (currentProduct.productRating.length),
           totalLikes: 0

@@ -106,7 +106,8 @@ export class CartService extends PrismaClient implements OnModuleInit {
           ProductCatalog: {
             select: {
               idProduct: true,
-              productName: true
+              productName: true,
+              productImage: true
             }
           }
         }

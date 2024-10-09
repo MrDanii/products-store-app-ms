@@ -70,16 +70,19 @@ export class FavoritesService extends PrismaClient implements OnModuleInit {
           listName: true,
           productsList: true
         }
-      })
-
-      if (!favorites || favorites.productsList.length === 0) {
-        throw new RpcException({
-          status: HttpStatus.BAD_REQUEST,
-          message: `User with id [${idUser}] does not have any favorites`
-        })
+      }) || {
+        listName: 'Favorites',
+        productsList: []
       }
 
-      return (favorites) ? favorites : []
+      // if (!favorites || favorites.productsList.length === 0) {
+      //   throw new RpcException({
+      //     status: HttpStatus.BAD_REQUEST,
+      //     message: `User with id [${idUser}] does not have any favorites`
+      //   })
+      // }
+
+      return favorites
     } catch (error) {
       throw new RpcException({
         status: HttpStatus.BAD_REQUEST,
