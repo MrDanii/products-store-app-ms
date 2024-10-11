@@ -41,7 +41,7 @@ jobs:
 
     - name: Push Docker image
       run: |
-        docker tag products-store-ms:latest dandockerdan/products-store-repository:latest
+        docker tag products-store-ms:latest dandockerdan/products-store-repository:products-store-ms
         docker push dandockerdan/products-store-repository:products-store-ms
 
       #echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
