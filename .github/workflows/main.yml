@@ -3,10 +3,10 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - cloud-build  # Ejecutar en la rama principal
+      - main  # Ejecutar en la rama principal
   pull_request:
     branches:
-      - cloud-build
+      - main
 
 jobs:
   build:
