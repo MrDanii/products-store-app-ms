@@ -1,0 +1,45 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - cloud-build  # Ejecutar en la rama principal
+  pull_request:
+    branches:
+      - cloud-build
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Cache Docker layers
+      uses: actions/cache@v2
+      with:
+        path: /tmp/.buildx-cache
+        key: ${{ runner.os }}-buildx-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-buildx-
+
+    - name: Build Docker image
+      run: |
+        docker build \
+          --build-arg BUILD_DATABASE_URL=${{ secrets.BUILD_DATABASE_URL }} \
+          -f Dockerfile.prod \
+          -t products-store-ms:latest .
+
+    - name: Push Docker image
+      run: |
+        docker tag products-store-ms:latest dandockerdan/products-store-repository:latest
+        echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+        docker push dandockerdan/products-store-repository:latest
+
+    # - name: Deploy to production
+    #   run: |
+    #     ssh user@myserver "docker pull dandockerdan/products-store-ms:latest && docker stop products-store-ms && docker rm products-store-ms && docker run -d --name products-store-ms dandockerdan/products-store-ms:latest"
