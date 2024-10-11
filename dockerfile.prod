@@ -16,9 +16,8 @@ RUN npm install
 #* 3. Building Stage
 FROM base AS build
 
-# ARG STORE_DATABASE_URL
-ENV DATABASE_URL=postgresql://products-store1-db-prod_owner:JEa9U6GmAIYO@ep-young-sunset-a5h4mep7.us-east-2.aws.neon.tech/products-store1-db-prod?sslmode=require
-# ENV DATABASE_URL=$STORE_DATABASE_URL
+ARG BUILD_DATABASE_URL
+ENV DATABASE_URL=$BUILD_DATABASE_URL
 
 COPY --from=deps ./usr/src/app/node_modules ./node_modules
 COPY . .
