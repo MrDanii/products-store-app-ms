@@ -31,7 +31,7 @@ jobs:
       run: |
         docker build \
           --build-arg BUILD_DATABASE_URL=${{ secrets.BUILD_DATABASE_URL }} \
-          -f Dockerfile.prod \
+          -f dockerfile.prod \
           -t products-store-ms:latest .
 
     - name: Push Docker image
