@@ -16,8 +16,8 @@ RUN npm install
 #* 3. Building Stage
 FROM base AS build
 
-ARG STORE_DATABASE_URL
-ENV DATABASE_URL=postgresql://postgres:YourStrongPostgresPassword@localhost:5432/products-store1-db?schema=public
+ARG BUILD_DATABASE_URL
+ENV DATABASE_URL=$BUILD_DATABASE_URL
 
 COPY --from=deps ./usr/src/app/node_modules ./node_modules
 COPY . .
@@ -26,7 +26,7 @@ COPY ./prisma ./
 RUN npx prisma migrate deploy
 RUN npx prisma generate 
 RUN npm run build 
-RUN RUN npm ci -f --only=production && npm cache clean --force  # Deleting dev dependencies
+RUN npm ci -f --only=production && npm cache clean --force  # Deleting dev dependencies
 
 #* 4. Production Stage
 FROM base AS prod
