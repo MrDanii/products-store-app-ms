@@ -13,6 +13,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ vars.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
     - name: Checkout repository
       uses: actions/checkout@v2
 
@@ -37,9 +42,9 @@ jobs:
     - name: Push Docker image
       run: |
         docker tag products-store-ms:latest dandockerdan/products-store-repository:latest
-        echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
         docker push dandockerdan/products-store-repository:latest
 
+      #echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
     # - name: Deploy to production
     #   run: |
     #     ssh user@myserver "docker pull dandockerdan/products-store-ms:latest && docker stop products-store-ms && docker rm products-store-ms && docker run -d --name products-store-ms dandockerdan/products-store-ms:latest"
