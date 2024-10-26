@@ -8,15 +8,15 @@ export class UpdateUserAdminDto extends PartialType(UpdateUserDto) {
   
   @IsOptional()
   @IsString()
-  useWhoUpdated: string
+  useWhoUpdated?: string
 
   @IsOptional()
   @IsArray()
   @ArrayMinSize(1)
-  roles: string[] = ['user']
+  roles?: string[]
 
   @IsOptional()
   @IsString()
   @MinLength(6)
-  password: string
+  password?: string
 }

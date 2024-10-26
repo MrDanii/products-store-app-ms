@@ -131,10 +131,11 @@ export class UserEditService extends PrismaClient implements OnModuleInit {
       }
 
       // hash Password
-      const passwordHashed = bcrypt.hashSync(password, 10)
+      if (password) rest['password'] = bcrypt.hashSync(password, 10)
+      // console.log({ rest });
 
       const updatedUser = await this.user.update({
-        data: { ...rest, updatedBy: useWhoUpdated, password: passwordHashed },
+        data: { ...rest, updatedBy: useWhoUpdated },
         where: { idUser: idUser }
       })
 

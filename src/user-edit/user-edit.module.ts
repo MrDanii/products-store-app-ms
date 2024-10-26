@@ -5,5 +5,6 @@ import { UserEditController } from './user-edit.controller';
 @Module({
   controllers: [UserEditController],
   providers: [UserEditService],
+  exports: [UserEditService]
 })
 export class UserEditModule {}

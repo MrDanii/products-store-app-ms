@@ -6,9 +6,10 @@ import { CartModule } from './cart/cart.module';
 import { UserAddressModule } from './user-address/user-address.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { UserEditModule } from './user-edit/user-edit.module';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
-  imports: [AuthModule, ProductModule, OrdersModule, CartModule, UserAddressModule, FavoritesModule, UserEditModule],
+  imports: [AuthModule, ProductModule, OrdersModule, CartModule, UserAddressModule, FavoritesModule, UserEditModule, SeedModule],
   controllers: [],
   providers: [],
 })

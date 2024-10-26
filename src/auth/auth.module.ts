@@ -15,6 +15,7 @@ import { envs } from 'src/config';
       secret: envs.jwtSecret,
       signOptions: { expiresIn: envs.jwtExpireTime },
     }),
-  ]
+  ],
+  exports: [AuthService]
 })
 export class AuthModule { }

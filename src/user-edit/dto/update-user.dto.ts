@@ -6,18 +6,18 @@ export class UpdateUserDto {
 
   @IsOptional()
   @IsString()
-  userNickName: string
+  userNickName?: string
 
   @IsOptional()
   @IsBoolean()
-  isActive: boolean
+  isActive?: boolean
 
   // @IsOptional()
   // @IsArray()
   // @ArrayMinSize(1)
-  // roles: string[] = ['user']
+  // roles?: string[] = ['user']
 
   @IsOptional()
   @IsString()
-  updatedBy: string
+  updatedBy?: string
 }
